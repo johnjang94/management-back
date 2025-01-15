@@ -1,5 +1,9 @@
-import express from "express";
-import bodyParser from "body-parser";
+import express, {
+  Request,
+  Response,
+  NextFunction,
+  ErrorRequestHandler,
+} from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -18,7 +22,6 @@ import {
   sendPasswordResetLink,
   resetPassword,
 } from "./controllers/password-reset-controller";
-import { ErrorRequestHandler } from "express";
 
 dotenv.config({ path: ".env.local" });
 
@@ -30,9 +33,12 @@ if (!MONGO_URI) {
   throw new Error("MONGO_URI is not defined in the environment variables.");
 }
 
+// Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
+// MongoDB Connection
+mongoose.set("strictQuery", false);
 mongoose
   .connect(MONGO_URI)
   .then(() => {
@@ -46,21 +52,43 @@ mongoose
     process.exit(1);
   });
 
+// Routes
 app.post("/api/sign-up-detail", validateRegister, registerUser);
 app.post("/api/login", validateLogin, loginUser);
 app.post("/api/verification", generateAndSendCode);
 app.post("/api/verify-code", verifyCode);
-app.get("/api/dashboard", authenticateToken, (req, res) => {
-  res.json({ message: "Welcome to your dashboard!", user: req.user });
-});
-app.post("/api/logout", authenticateToken, (req, res) => {
-  res.status(200).json({ message: "Logout successful." });
-});
+
+// Extend Request for authenticated routes
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
+
+app.get(
+  "/api/dashboard",
+  authenticateToken,
+  (req: AuthenticatedRequest, res: Response) => {
+    res.json({ message: "Welcome to your dashboard!", user: req.user });
+  }
+);
+
+app.post(
+  "/api/logout",
+  authenticateToken,
+  (req: AuthenticatedRequest, res: Response) => {
+    res.status(200).json({ message: "Logout successful." });
+  }
+);
 
 app.post("/api/password-reset/request-reset", sendPasswordResetLink);
 app.post("/api/password-reset/reset-password", resetPassword);
 
-const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+// Error Handling Middleware
+const errorHandler: ErrorRequestHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   console.error(err.stack);
   res.status(500).send({ message: "Something went wrong!" });
 };
