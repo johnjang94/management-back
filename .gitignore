@@ -1,0 +1,54 @@
+# Node.js dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE and editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# TypeScript build artifacts
+dist/
+*.tsbuildinfo
+
+# Temporary files and cache
+tmp/
+temp/
+.cache/
+.vscode-test/
+
+# Coverage reports
+coverage/
+
+# Dependency directories for various package managers
+jspm_packages/
+.bower_components/
+
+# OS-generated files
+*.bak
+*.tmp
+
+# npm package locks (optional if not using them)
+package-lock.json
+yarn.lock
+
+# macOS and Linux specific files
+.AppleDouble
+.LSOverride
+*.un~
